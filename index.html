@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pesan Penting!</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #111;
+            color: #fff;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .shake {
+            animation: shake 0.14s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(4px, 3px) rotate(0deg); }
+            25% { transform: translate(-4px, -3px) rotate(-1deg); }
+            50% { transform: translate(-3px, 4px) rotate(1deg); }
+            75% { transform: translate(4px, -2px) rotate(0deg); }
+            100% { transform: translate(-2px, -4px) rotate(-1deg); }
+        }
+
+        #start-screen {
+            background: #1e1e24;
+            border: 1px solid #333;
+            border-radius: 18px;
+            padding: 28px 22px;
+            max-width: 360px;
+            width: 100%;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        #start-screen h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        #start-screen p {
+            font-size: 14px;
+            color: #b5b5c3;
+            margin-bottom: 22px;
+            line-height: 1.5;
+        }
+
+        .btn-main {
+            background: #ff2e63;
+            color: #fff;
+            border: none;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 12px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        #prank-screen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                #ff2e63,
+                #ff2e63 20px,
+                #08d9d6 20px,
+                #08d9d6 40px
+            );
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .spam-text {
+            position: absolute;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .modal-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            color: #111;
+            width: 86%;
+            max-width: 340px;
+            border-radius: 20px;
+            padding: 24px 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+            z-index: 30;
+        }
+
+        .modal-box h1 {
+            font-size: 24px;
+            font-weight: 900;
+            color: #d90429;
+            margin-bottom: 8px;
+        }
+
+        .modal-box p {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 18px;
+        }
+
+        .btn-runaway {
+            position: relative;
+            background: #111;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.08s ease;
+        }
+
+        .fake-close {
+            margin-top: 12px;
+            display: block;
+            width: 100%;
+            background: transparent;
+            border: 1px dashed #999;
+            color: #555;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h2>⚠️ Peringatan Sistem HP</h2>
+        <p>Terdeteksi file mencurigakan yang belum dibuka. Ketuk tombol di bawah untuk memuat pratinjau pesan.</p>
+        <button class="btn-main" onclick="startPrank()">Buka Pesan</button>
+    </div>
+
+    <div id="prank-screen">
+        <div class="modal-box" id="modal">
+            <h1 id="modal-title">Pijay Kanciang</h1>
+            <p id="counter-msg">Pesan ini muncul 1x... eh salah, bakal nambah terus.</p>
+            <button class="btn-runaway" id="dodge-btn" onmouseover="dodgeButton()" ontouchstart="dodgeButton()" onclick="dodgeButton()">
+                Tutup Pesan
+            </button>
+            <button class="fake-close" onclick="spawnMore()">Coba tutup paksa</button>
+        </div>
+    </div>
+
+    <script>
+        const phrases = [
+            "Pijay Kanciang",
+            "Pijay best staff psycho cup 2026",
+            "Pijay x Enca",
+            "CapJay",
+            "Pijay Kurang Kopi",
+            "Pijay Salah Pencet",
+            "Pijay Mode Nyebelin",
+            "Pijay Auto Panik"
+        ];
+
+        let count = 0;
+        let spamInterval;
+
+        function vibratePattern() {
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 80, 200, 80, 400]);
+            }
+        }
+
+        function playTone() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(520 + (count % 6) * 90, ctx.currentTime);
+                gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.12);
+            } catch (e) {}
+        }
+
+        function createFloatingText() {
+            count++;
+            const currentPhrase = phrases[(count - 1) % phrases.length];
+            const screen = document.getElementById('prank-screen');
+            const el = document.createElement('div');
+            el.className = 'spam-text';
+            el.innerText = currentPhrase;
+
+            const size = Math.floor(Math.random() * 18) + 16;
+            const x = Math.random() * Math.max(20, window.innerWidth - 180);
+            const y = Math.random() * Math.max(20, window.innerHeight - 40);
+            const rot = Math.floor(Math.random() * 36) - 18;
+
+            el.style.fontSize = size + 'px';
+            el.style.left = Math.max(5, x) + 'px';
+            el.style.top = Math.max(5, y) + 'px';
+            el.style.transform = `rotate(${rot}deg)`;
+
+            screen.appendChild(el);
+
+            document.getElementById('modal-title').innerText = currentPhrase;
+            document.getElementById('counter-msg').innerText =
+                `Sudah muncul ${count}x. "${currentPhrase}" nggak mau pergi semudah itu.`;
+
+            playTone();
+            vibratePattern();
+
+            if (screen.children.length > 75) {
+                screen.removeChild(screen.children[1]);
+            }
+        }
+
+        function dodgeButton() {
+            const btn = document.getElementById('dodge-btn');
+            const dx = (Math.random() - 0.5) * 180;
+            const dy = (Math.random() - 0.5) * 140;
+            btn.style.transform = `translate(${dx}px, ${dy}px)`;
+            createFloatingText();
+        }
+
+        function spawnMore() {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(createFloatingText, i * 80);
+            }
+        }
+
+        function startPrank() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('prank-screen').style.display = 'block';
+            document.body.classList.add('shake');
+
+            createFloatingText();
+            spamInterval = setInterval(createFloatingText, 450);
+        }
+    </script>
+</body>
+</html>
